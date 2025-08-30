@@ -17,6 +17,7 @@ type EventService interface {
 	UpdateEvents(ctx context.Context, p *entity.Events) (*entity.Events, error)
 	DeleteEvents(ctx context.Context, id uint) error
 	RecoverEvents(ctx context.Context, id uint) error
+	CountEvents(ctx context.Context, search, category, status string, filterDate *time.Time) (int64, error)
 }
 
 type eventService struct {
@@ -206,3 +207,8 @@ func (s *eventService) RecoverEvents(ctx context.Context, id uint) error {
 	}
 	return nil
 }
+
+func (s *eventService) CountEvents(ctx context.Context, search, category, status string, filterDate *time.Time) (int64, error) {
+	return s.repo.CountEvents(ctx, search, category, status, filterDate)
+}
+

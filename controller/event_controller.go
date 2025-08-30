@@ -80,8 +80,17 @@ func (ctl *EventController) GetEvents(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, events)
+
+	totalItems, _ := ctl.service.CountEvents(c.Request.Context(), search, category, status, filterDate)
+
+	c.JSON(http.StatusOK, gin.H{
+		"current_page": offset/limit + 1,
+		"total_pages":  (totalItems + int64(limit) - 1) / int64(limit),
+		"total_items":  totalItems,
+		"items":        events,
+	})
 }
+
 
 // GET event by ID
 func (ctl *EventController) GetEventsByID(c *gin.Context) {

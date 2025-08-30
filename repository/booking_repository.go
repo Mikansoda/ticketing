@@ -21,6 +21,8 @@ type BookingRepository interface {
 	Update(ctx context.Context, booking *entity.Bookings, tx *gorm.DB) error
 	GetBookingByIDForUpdate(ctx context.Context, id uuid.UUID, tx *gorm.DB) (*entity.Bookings, error)
 	BeginTx() *gorm.DB
+	CountBookings(ctx context.Context) (int64, error)
+	CountBookingsByStatus(ctx context.Context, status string) (int64, error)
 }
 
 type bookingRepo struct {
@@ -114,4 +116,16 @@ func (r *bookingRepo) GetBookingByIDForUpdate(ctx context.Context, id uuid.UUID,
 
 func (r *bookingRepo) BeginTx() *gorm.DB {
 	return r.db.Begin()
+}
+
+func (r *bookingRepo) CountBookings(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&entity.Bookings{}).Count(&count).Error
+	return count, err
+}
+
+func (r *bookingRepo) CountBookingsByStatus(ctx context.Context, status string) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&entity.Bookings{}).Where("booking_status = ?", status).Count(&count).Error
+	return count, err
 }

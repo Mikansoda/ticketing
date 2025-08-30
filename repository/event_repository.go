@@ -19,6 +19,7 @@ type EventRepository interface {
 	RecoverEvents(ctx context.Context, id uint) error
 	IsEventNameExists(ctx context.Context, name string, excludeID uint) (bool, error)
 	HasBookings(ctx context.Context, eventID uint) (bool, error)
+	CountEvents(ctx context.Context, search, category, status string, filterDate *time.Time) (int64, error)
 }
 
 type eventRepo struct {
@@ -128,3 +129,28 @@ func (r *eventRepo) HasBookings(ctx context.Context, eventID uint) (bool, error)
 	}
 	return count > 0, nil
 }
+
+func (r *eventRepo) CountEvents(ctx context.Context, search, category, status string, filterDate *time.Time) (int64, error) {
+	var count int64
+	db := r.db.WithContext(ctx).Model(&entity.Events{})
+
+	if search != "" {
+		db = db.Where("events.name LIKE ?", "%"+search+"%")
+	}
+	if category != "" {
+		db = db.Joins("JOIN event_categories ec ON ec.id = events.category_id").
+			Where("ec.name LIKE ?", "%"+category+"%")
+	}
+	if status != "" {
+		db = db.Where("events.event_status = ?", status)
+	}
+	if filterDate != nil {
+		db = db.Where("events.start_date <= ? AND events.end_date >= ?", *filterDate, *filterDate)
+	}
+
+	if err := db.Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+

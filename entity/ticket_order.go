@@ -13,7 +13,7 @@ type Tickets struct {
     TicketTypeID  uint      `gorm:"not null" json:"ticket_type_id"`
     VisitorID     uuid.UUID `gorm:"type:char(36);not null" json:"visitor_id"`
     SeatNumber    string    `gorm:"type:varchar(50)" json:"seat_number"`
-    TicketStatus  string    `gorm:"type:enum('pending','valid','cancelled','used');default:'pending'" json:"status"`
+    TicketStatus  string    `gorm:"type:enum('pending','valid','cancelled','used');default:'pending';index" json:"status"`
     CreatedAt     time.Time `gorm:"autoCreateTime" json:"created_at"`
     CheckedInAt  *time.Time `json:"checked_in_at,omitempty"`
 
@@ -28,7 +28,7 @@ type Bookings struct {
     ID            uuid.UUID `gorm:"type:char(36);primaryKey" json:"id"`
     UserID        uuid.UUID `gorm:"type:char(36);not null" json:"user_id"`
     Quantity      uint      `gorm:"not null" json:"quantity"`
-    BookingStatus string    `gorm:"type:enum('pending','paid','cancelled','refunded');default:'pending'" json:"status"`
+    BookingStatus string    `gorm:"type:enum('pending','paid','cancelled','refunded');default:'pending';index" json:"status"`
     TotalAmount   float64   `gorm:"type:decimal(12,2);not null" json:"total_amount"`
 	OrderDate     time.Time `gorm:"autoCreateTime" json:"order_date"`
     CreatedAt     time.Time `gorm:"autoCreateTime" json:"created_at"`

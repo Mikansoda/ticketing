@@ -20,6 +20,8 @@ type BookingService interface {
 	GetBookingsByUser(ctx context.Context, userID uuid.UUID) ([]entity.Bookings, error)
 	UpdateBookingStatus(ctx context.Context, bookingID uuid.UUID, status string) error
 	GetBookingsByStatus(ctx context.Context, status string, limit, offset int) ([]entity.Bookings, error)
+    CountBookings(ctx context.Context) (int64, error)
+    CountBookingsByStatus(ctx context.Context, status string) (int64, error)
 }
 
 type bookingService struct {
@@ -356,3 +358,10 @@ func (s *bookingService) UpdateBookingStatus(ctx context.Context, bookingID uuid
 	return tx.Commit().Error
 }
 
+func (s *bookingService) CountBookings(ctx context.Context) (int64, error) {
+	return s.bookingRepo.CountBookings(ctx)
+}
+
+func (s *bookingService) CountBookingsByStatus(ctx context.Context, status string) (int64, error) {
+	return s.bookingRepo.CountBookingsByStatus(ctx, status)
+}

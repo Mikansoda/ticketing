@@ -40,23 +40,38 @@ func (ctl *OrderController) GetBookings(c *gin.Context) {
 	offset, _ := strconv.Atoi(offsetStr)
 
 	var (
-		bookings []entity.Bookings
-		err      error
+		bookings   []entity.Bookings
+		err        error
+		totalItems int64
 	)
 	if status != "" {
-	bookings, err = ctl.service.GetBookingsByStatus(c.Request.Context(), status, limit, offset)
+		bookings, err = ctl.service.GetBookingsByStatus(c.Request.Context(), status, limit, offset)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to fetch bookings, try again later",
+				"detail":  err.Error(),
+			})
+			return
+		}
+		totalItems, _ = ctl.service.CountBookingsByStatus(c.Request.Context(), status)
 	} else {
-	bookings, err = ctl.service.GetBookings(c.Request.Context(), limit, offset)
-    }
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to fetch bookings, try again later",
-			"detail":  err.Error(),
-		})
-		return
+		bookings, err = ctl.service.GetBookings(c.Request.Context(), limit, offset)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to fetch bookings, try again later",
+				"detail":  err.Error(),
+			})
+			return
+		}
+		totalItems, _ = ctl.service.CountBookings(c.Request.Context())
 	}
-	c.JSON(http.StatusOK, bookings)
+
+	c.JSON(http.StatusOK, gin.H{
+		"current_page": offset/limit + 1,
+		"total_pages":  (totalItems + int64(limit) - 1) / int64(limit),
+		"total_items":  totalItems,
+		"items":        bookings,
+	})
 }
 
 // GET bookings (self-requested by user)

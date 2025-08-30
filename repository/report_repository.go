@@ -59,7 +59,7 @@ func (r *reportRepo) SumTotalAmountByDateRange(ctx context.Context, start, end t
 		Joins("JOIN tickets ON tickets.booking_id = bookings.id").
 		Where("order_date >= ? AND order_date < ?", start, end).
 		Where("tickets.ticket_status IN ?", []string{"valid", "used"}).
-		Select("SUM(total_amount)").Scan(&total).Error; err != nil {
+		Select("SUM(DISTINCT bookings.total_amount)").Scan(&total).Error; err != nil {
 		return 0, err
 	}
 	return total, nil
@@ -74,7 +74,7 @@ func (r *reportRepo) SumTotalAmountByEvent(ctx context.Context, eventID uint) (f
 		Joins("JOIN ticket_types ON ticket_types.id = tickets.ticket_type_id").
 		Where("ticket_types.event_id = ?", eventID).
 		Where("tickets.ticket_status IN ?", []string{"valid", "used"}).
-		Select("SUM(total_amount)").Scan(&total).Error; err != nil {
+		Select("SUM(DISTINCT bookings.total_amount)").Scan(&total).Error; err != nil {
 		return 0, err
 	}
 	return total, nil
